@@ -148,10 +148,9 @@
 
                 </div>
                 <!-- Danh sách các file đã chọn -->
-                <div
-                    style="display: flex; justify-content: center; align-items: center; line-height: 0px; position: relative; right: 59px; margin-top: 7px;"
+                <div style="display: flex; justify-content: center; align-items: center; line-height: 0px; position: relative; right: 59px; margin-top: 7px;"
                     v-show="selectedFiles.length > 0">
-                    
+
 
                     <div class="list-file-window" style="width:60%;">
                         <div v-for="(file, index) in selectedFiles" :key="index" class="file-item"
@@ -210,6 +209,7 @@ export default {
             isShowLoadMessage: false,
             isWelcomeMessage: true,
             selectedFiles: [],
+            file_name_list : [],
 
 
         };
@@ -264,7 +264,7 @@ export default {
             this.isNavBarShow = !this.isNavBarShow;
         },
 
-        addMessageHuman() {
+        async addMessageHuman() {
             if (this.prompt !== '') {
                 this.components.push({
                     component: 'MessageHuman', // Tên của component
@@ -278,8 +278,8 @@ export default {
                 if (this.selectedFiles.length === 0) {
                     console.log("Chưa chọn file");
                 } else {
-                    this.uploadFiles();
-                    console.log("Đã upload");
+                    this.file_name_list = await this.uploadFiles();
+                    console.log(this.file_name_list);
                 }
                 this.selectedFiles = []; // Xóa danh sách file đã chọn sau khi gửi
 
@@ -305,8 +305,9 @@ export default {
         },
         async messageToAgent() {
             try {
-                const response = await apiClient.post('/api/chat', {
-                    prompt: this.prompt
+                const response = await apiClient.post('/api/chattest', {
+                    prompt: this.prompt,
+                    file_name_list: this.file_name_list 
                 });
                 console.log(response);
 
@@ -347,10 +348,11 @@ export default {
             });
 
             try {
-                const res = await axios.post("http://127.0.0.1:5000/upload", formData, {
-                    headers: { "Content-Type": "multipart/form-data" },
+                const res = await apiClient.post('/upload', formData, {
+                    headers: { "Content-Type": "multipart/form-data" }
                 });
-                console.log("Kết quả:", res.data);
+                console.log("Kết quả:", res.data.file_name_list);
+                return res.data.file_name_list; 
             } catch (err) {
                 console.error("Lỗi upload:", err);
             }
