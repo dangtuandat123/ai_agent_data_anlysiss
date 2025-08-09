@@ -45,7 +45,7 @@ export default {
                  <div style="display: flex; align-items: center; margin-bottom:5px;width: 100%;height: auto;max-width: 100%; padding:10px 10% 10px 10%">
                     <img src="data:image/png;base64,${img_base64}" alt="" style="width: 100%;height: auto;max-width: 100%; border-radius:10px">
                 </div>
-                <div class="message-text">${rawhtmlMessage}</div> <!-- Message được render dưới dạng HTML -->
+                <div class="message-text" >${rawhtmlMessage}</div> <!-- Message được render dưới dạng HTML -->
                
                 
 
