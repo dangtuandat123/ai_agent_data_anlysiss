@@ -1586,8 +1586,8 @@ nav {
     display: flex;
     flex-direction: column;
     overflow-y: auto;
-    padding-left: 15%;
-    padding-right: 15%;
+    padding-left: 20%;
+    padding-right: 20%;
 
     
   }
@@ -2063,12 +2063,13 @@ nav {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--darker-bg);
+  /* background: var(--darker-bg); */
+
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(var(--primary-cyan), var(--primary-pink));
-  border-radius: 4px;
+  background: white;
+  border-radius: 20px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
