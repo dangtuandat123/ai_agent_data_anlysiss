@@ -14,7 +14,7 @@
                     
                     <div class="button">
                         <!-- Nút xuất CSV -->
-                        <button @click="exportToCSV" class="button_export_csv">Xuất CSV</button>
+                        <button @click="exportToCSV" v-if="message.type === 'table_html'" class="button_export_csv">Xuất CSV</button>
                     </div>
 
                     <!-- Hiển thị message -->
@@ -112,8 +112,11 @@ export default {
     background-color: #f9f9f9;
     border-radius: 20px;
     border: 0px;
+    
 }
-
+.table-container{
+    overflow: auto;
+}
 .table-container th,
 .table-container td {
     border: 1px solid #ddd;
