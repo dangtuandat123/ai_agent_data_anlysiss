@@ -30,7 +30,7 @@ export default {
 .loader {
     width: fit-content;
     font-weight: bold;
-    font-size: 0.9rem;
+    font-size: 15PX;
     color: #0000;
     background: linear-gradient(90deg, #ffffff 25%, #83ffae 0 50%, #fdff6e 0 75%, #00eaff 0) 0 0/400% 100%;
     -webkit-background-clip: text;

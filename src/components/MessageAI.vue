@@ -3,18 +3,20 @@
         <div class="message-item">
             <div class="message-content">
                 <template v-if="message.iscode">
+
                     <!-- Hiển thị mã nguồn -->
-                    <CodeComponentAI :code="localCode" @update:code="updateCode" />
+                    <CodeComponentAI :code="localCode" @update:code="updateCode" @run-again="handleRunAgain" />
 
                     <!-- Hiển thị hình ảnh -->
                     <ImageComponentAI v-if="message.type === 'img'" :imgBase64="message.img_base64" />
 
                     <!-- Hiển thị bảng HTML -->
                     <div v-if="message.type === 'table_html'" v-html="message.table_html" class="table-container"></div>
-                    
+
                     <div class="button">
                         <!-- Nút xuất CSV -->
-                        <button @click="exportToCSV" v-if="message.type === 'table_html'" class="button_export_csv">Xuất CSV</button>
+                        <button @click="exportToCSV" v-if="message.type === 'table_html'" class="button_export_csv">Xuất
+                            CSV</button>
                     </div>
 
                     <!-- Hiển thị message -->
@@ -22,6 +24,7 @@
                     <ButtonCopy @click="copyText" />
 
                 </template>
+
 
                 <template v-else>
                     <!-- Nếu không phải code, chỉ render message bình thường -->
@@ -59,14 +62,14 @@ export default {
             }
         },
         updateCode(newCode) {
-            // Cập nhật mã code mới trong bản sao
             this.localCode = newCode;
-            // Emit sự thay đổi để thông báo với component cha
             this.$emit('update:code', newCode);
             console.log("Code updated:", newCode);
         },
+        handleRunAgain() {
+            console.log('Run Again button clicked! ' + this.localCode);
+        },
 
-        // Phương thức xuất bảng thành CSV với định dạng UTF-8
         exportToCSV() {
             const table = this.$el.querySelector('.table-container table');
             if (!table) {
@@ -81,13 +84,12 @@ export default {
                 const cells = row.querySelectorAll('th, td');
                 let rowData = [];
                 cells.forEach(cell => {
-                    rowData.push('"' + cell.textContent.trim().replace(/"/g, '""') + '"'); // Đảm bảo không có dấu " trong dữ liệu
+                    rowData.push('"' + cell.textContent.trim().replace(/"/g, '""') + '"'); 
                 });
                 csv.push(rowData.join(','));
             });
 
-            // Tạo tệp CSV từ dữ liệu bảng với mã hóa UTF-8
-            const csvContent = '\uFEFF' + csv.join('\n'); // Thêm BOM để đảm bảo UTF-8
+            const csvContent = '\uFEFF' + csv.join('\n'); 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
@@ -112,11 +114,13 @@ export default {
     background-color: #f9f9f9;
     border-radius: 20px;
     border: 0px;
-    
+
 }
-.table-container{
+
+.table-container {
     overflow: auto;
 }
+
 .table-container th,
 .table-container td {
     border: 1px solid #ddd;
