@@ -7,17 +7,11 @@
         <span>{{ langLabel }}</span>
       </div>
       <div class="flex items-center gap-1.5">
-        <!-- Copy code (panel) -->
-        <div class="relative inline-block">
-          <input :id="copyId" type="checkbox" class="peer sr-only" aria-hidden="true" />
-          <label :for="copyId" role="button" tabindex="0" :aria-controls="copyPanelId" aria-label="Sao chép mã" class="inline-flex h-8 sm:h-9 items-center gap-1.5 rounded-md bg-white/10 px-3 text-xs font-medium text-white ring-1 ring-inset ring-white/10 shadow-sm hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400">
-            <i class="fa-regular fa-copy" aria-hidden="true"></i>
-          </label>
-          <div :id="copyPanelId" role="dialog" aria-modal="false" aria-label="Sao chép mã" class="pointer-events-none absolute right-0 top-9 z-20 w-[min(92vw,22rem)] rounded-md border border-gray-200 bg-white p-3 text-xs text-gray-700 shadow-lg opacity-0 transition peer-checked:pointer-events-auto peer-checked:opacity-100">
-            <p class="mb-2 text-[11px] text-gray-500">Chọn và sao chép mã:</p>
-            <textarea readonly :value="localCode" class="h-40 w-full resize-none rounded border border-gray-200 bg-gray-50 p-2 font-mono text-[12px] leading-6"></textarea>
-          </div>
-        </div>
+        <!-- Copy code button -->
+        <button type="button" @click="copyCode" aria-label="Sao chép mã" class="inline-flex h-8 sm:h-9 items-center gap-1.5 rounded-md bg-white/10 px-3 text-xs font-medium text-white ring-1 ring-inset ring-white/10 shadow-sm hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400">
+          <i class="fa-regular fa-copy" aria-hidden="true"></i>
+          <span>Copy</span>
+        </button>
         <!-- Run again (UI only) -->
         <div class="relative inline-block">
           <input :id="runId" type="checkbox" class="peer sr-only" aria-hidden="true" />
@@ -105,8 +99,6 @@ export default {
     const uid = Math.random().toString(36).slice(2);
     return {
       localCode: this.code,
-      copyId: `copy-code-${uid}`,
-      copyPanelId: `copy-code-panel-${uid}`,
       runId: `run-code-${uid}`,
       runPanelId: `run-code-panel-${uid}`,
       zoomId: `code-zoom-${uid}`,
@@ -131,6 +123,25 @@ export default {
   methods: {
     runAgain() {
       this.$emit('run-again');
+    },
+    copyCode() {
+      try {
+        const text = this.localCode || '';
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(text);
+        } else {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+      } catch (e) {
+        console.error('Copy code failed', e);
+      }
     },
     openEdit() { this.isEditMode = true; },
     closeEdit() { this.isEditMode = false; },

@@ -26,18 +26,10 @@
         <p>{{ message }}</p>
       </div>
       <div class="mt-1 flex justify-end gap-2">
-        <!-- Copy panel (UI-only) -->
-        <div class="relative inline-block">
-          <input :id="copyId" type="checkbox" class="peer sr-only" aria-hidden="true" />
-          <label :for="copyId" role="button" tabindex="0" aria-label="Mở panel sao chép" :aria-controls="copyPanelId" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-600 ring-1 ring-inset ring-gray-200 shadow-sm hover:bg-gray-50">
-            <i class="fa-regular fa-copy" aria-hidden="true"></i>
-            <span class="sr-only">Sao chép nội dung</span>
-          </label>
-          <div :id="copyPanelId" role="dialog" aria-modal="false" aria-label="Sao chép nội dung" class="pointer-events-none absolute right-0 top-9 z-20 w-64 rounded-md border border-gray-200 bg-white p-3 text-xs text-gray-700 shadow-lg opacity-0 transition peer-checked:pointer-events-auto peer-checked:opacity-100">
-            <p class="mb-2 text-[11px] text-gray-500">Chọn và copy nội dung:</p>
-            <textarea readonly :value="message" class="w-full resize-none rounded border border-gray-200 bg-gray-50 p-2 text-xs leading-5"></textarea>
-          </div>
-        </div>
+        <button type="button" @click.stop="copyMessage" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-600 ring-1 ring-inset ring-gray-200 shadow-sm hover:bg-gray-50">
+          <i class="fa-regular fa-copy" aria-hidden="true"></i>
+          <span class="sr-only">Sao chép nội dung</span>
+        </button>
       </div>
       <p class="mt-1 text-right text-xs text-gray-500">Bạn<span v-if="time"> • {{ time }}</span></p>
     </article>
@@ -55,6 +47,25 @@ export default {
     };
   },
   methods: {
+    async copyMessage() {
+      try {
+        const text = this.message || '';
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+      } catch (e) {
+        console.error('Copy failed', e);
+      }
+    },
     // Icon/màu/label theo phần mở rộng
     fileMeta(fileName) {
       const ext = (fileName.split('.').pop() || '').toLowerCase();
