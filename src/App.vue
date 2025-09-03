@@ -9,12 +9,12 @@
 </template>
 
 <script>
-import '../src/assets/css/templatemo-nexus-style.css'
+// import '../src/assets/css/templatemo-nexus-style.css'
 
 export default {
   async mounted() {
     try {
-      await import('./assets/js/templatemo-nexus-scripts.js');
+      // await import('./assets/js/templatemo-nexus-scripts.js');
 
      
     } catch (error) {
