@@ -1,117 +1,105 @@
 <template>
-
-    <div class="message-list-human">
-        <div class="message-item"></div>
-        <div class="message-item message-item2">
-            <div class="file_upload button_send" style="align-items: start; position: unset;" v-show="listFile.length > 0"
-                >
-                <div class="svg-wrapper" style="display: flex; margin-bottom: 8px;">
- 
-                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" style="transform: none;"
-                        xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="none" viewBox="0 0 24 24">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M10 3v4a1 1 0 0 1-1 1H5m4 10v-2m3 2v-6m3 6v-3m4-11v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z" />
-                    </svg>
-                    <p style="color: white;">file upload</p>
-                </div>
-
-                <div v-for="(file, index) in listFile" :key="index">
-                    <!-- Cắt tên file nếu quá dài và thêm dấu ba chấm -->
-                    <span>{{ truncateFileName(file) }}</span>
-                </div>
+  <!-- User message: right aligned bubble, optional files block -->
+  <li role="listitem" class="flex justify-end">
+    <article class="relative pt-2 max-w-full text-right min-w-0">
+      <!-- Files preview in message (if any) -->
+      <div v-if="listFile && listFile.length" class="inline-flex w-[min(92vw,100%)] flex-col gap-2 rounded-2xl rounded-tr-md bg-white p-2.5 sm:p-3 text-sm text-gray-900 ring-1 ring-gray-200 shadow-sm hover:ring-gray-300">
+        <ul class="divide-y divide-gray-200">
+          <li v-for="(file, index) in listFile" :key="index" class="flex items-center gap-3 py-1.5 first:pt-0 last:pb-0">
+            <div :class="['flex h-10 w-10 flex-none items-center justify-center rounded-md ring-1 ring-inset', fileMeta(file).bgClass, fileMeta(file).ringClass, fileMeta(file).textClass]">
+              <i :class="fileMeta(file).icon" aria-hidden="true"></i>
             </div>
-            <div class="message-content">
-                <p>{{ message }}</p>
+            <div class="min-w-0 text-left">
+              <p class="truncate max-w-[240px] sm:max-w-[360px] font-medium">{{ truncateFileName(file) }}</p>
+              <p class="text-xs text-gray-500">{{ fileMeta(file).label }}</p>
             </div>
+            <a href="#" :download="file" role="button" :aria-label="`Tải xuống ${file}`" class="ml-auto inline-flex items-center gap-1.5 rounded-md bg-white px-2 py-1 text-xs font-medium text-gray-700 ring-1 ring-inset ring-gray-300 shadow-sm hover:bg-gray-50">
+              <i class="fa-solid fa-file-arrow-down" aria-hidden="true"></i>
+              <span>Tải xuống</span>
+            </a>
+          </li>
+        </ul>
+      </div>
 
-        </div>
-    </div>
-
+      <!-- Message bubble -->
+      <div class="inline-block rounded-2xl rounded-tr-md bg-white px-3 py-2.5 text-sm font-medium text-gray-900 ring-1 ring-gray-200 shadow-sm mt-1">
+        <p>{{ message }}</p>
+      </div>
+      <div class="mt-1 flex justify-end gap-2">
+        <button type="button" @click.stop="copyMessage" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-600 ring-1 ring-inset ring-gray-200 shadow-sm hover:bg-gray-50">
+          <i class="fa-regular fa-copy" aria-hidden="true"></i>
+          <span class="sr-only">Sao chép nội dung</span>
+        </button>
+      </div>
+      <p class="mt-1 text-right text-xs text-gray-500">Bạn<span v-if="time"> • {{ time }}</span></p>
+    </article>
+  </li>
 </template>
 
 <script>
 export default {
-    props: ['message', 'listFile'],
-    methods: {
-        // Hàm cắt tên file nhưng vẫn giữ đuôi file
-        truncateFileName(fileName, maxLength = 40) {
-            const ext = fileName.slice(fileName.lastIndexOf('.'));  // Lấy phần đuôi file
-            const name = fileName.slice(0, fileName.lastIndexOf('.')); // Lấy phần tên file (không có đuôi)
-
-            // Nếu phần tên file dài quá, cắt lại và thêm dấu ba chấm, giữ đuôi file nguyên
-            if (name.length > maxLength) {
-                return name.substring(0, maxLength) + '...' + ext;
-            }
-            return fileName;  // Nếu tên file không dài thì giữ nguyên
+  props: ['message', 'listFile', 'time'],
+  data() {
+    const uid = Math.random().toString(36).slice(2);
+    return {
+      copyId: `copy-user-${uid}`,
+      copyPanelId: `copy-panel-user-${uid}`,
+    };
+  },
+  methods: {
+    async copyMessage() {
+      try {
+        const text = this.message || '';
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
         }
+      } catch (e) {
+        console.error('Copy failed', e);
+      }
+    },
+    // Icon/màu/label theo phần mở rộng
+    fileMeta(fileName) {
+      const ext = (fileName.split('.').pop() || '').toLowerCase();
+      const label = ext ? ext.toUpperCase() : 'FILE';
+      if (ext === 'pdf') {
+        return { icon: 'fa-solid fa-file-pdf', bgClass: 'bg-red-50', ringClass: 'ring-red-100', textClass: 'text-red-600', label: `PDF` };
+      }
+      if (ext === 'doc' || ext === 'docx') {
+        return { icon: 'fa-solid fa-file-word', bgClass: 'bg-blue-50', ringClass: 'ring-blue-100', textClass: 'text-blue-600', label: `DOCX` };
+      }
+      if (ext === 'png' || ext === 'jpg' || ext === 'jpeg' || ext === 'gif' || ext === 'webp') {
+        return { icon: 'fa-solid fa-file-image', bgClass: 'bg-emerald-50', ringClass: 'ring-emerald-100', textClass: 'text-emerald-600', label: `IMAGE` };
+      }
+            if (ext === 'csv') {
+                return { icon: 'fa-solid fa-file-csv', bgClass: 'bg-lime-50', ringClass: 'ring-lime-100', textClass: 'text-lime-700', label: 'CSV' };
+            }
+            if (ext === 'xls' || ext === 'xlsx') {
+                return { icon: 'fa-solid fa-file-excel', bgClass: 'bg-green-50', ringClass: 'ring-green-100', textClass: 'text-green-600', label: ext.toUpperCase() };
+            }
+      return { icon: 'fa-regular fa-file', bgClass: 'bg-gray-50', ringClass: 'ring-gray-200', textClass: 'text-gray-600', label };
+    },
+    // Cắt tên giữ đuôi
+    truncateFileName(fileName, maxLength = 40) {
+      const dot = fileName.lastIndexOf('.');
+      if (dot === -1) return fileName.length > maxLength ? fileName.slice(0, maxLength) + '…' : fileName;
+      const name = fileName.slice(0, dot);
+      const ext = fileName.slice(dot);
+      if (name.length > maxLength) return name.slice(0, maxLength) + '…' + ext;
+      return fileName;
     }
-
+  }
 };
 </script>
 
 <style scoped>
-:root {
-    --primary-grey: #e5e7eb;
-    --primary-orange: #f97316;
-    --primary-purple: #7c3aed;
-    --secondary-amber: #fbbf24;
-    --dark-bg: #1a0b2e;
-    --darker-bg: #0f051a;
-    --card-bg: rgba(229, 231, 235, 0.03);
-    --border-color: rgba(229, 231, 235, 0.2);
-    --text-primary: #ffffff;
-    --text-secondary: #a1a1aa;
-    --primary-cyan: #00ffff;
-    --primary-pink: #ff00ff;
-    --card-bg-btn: rgba(123, 23, 90, 0.254);
-}
-
-.section_nav_bar_chat_window {
-    display: flex;
-
-}
-
-
-
-.message-list-human {
-    margin-bottom: 15px;
-    display: flex;
-
-
-}
-
-.message-list-human .message-item2 {
-    background-color: rgba(255, 0, 200, 0.1);
-    border-radius: 20px;
-    backdrop-filter: blur(30px);
-    border-top-right-radius: 5px;
-
-    padding: 15px;
-
-
-}
-
-.message-list-human .message-item {
-    flex: 1;
-}
-
-.file_upload {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 10px;
-    border-radius: 12px;
-    backdrop-filter: blur(10px);
-    border-top-right-radius: 5px;
-    padding: 8px;
-    border: 1px solid var(--border-color);
-
-
-    border-radius: 15px;
-    font-weight: 600;
-    text-transform: uppercase;
-    text-shadow: 0 0 10px var(--primary-cyan);
-}
-.file_upload svg{
-    text-shadow: 0 0 10px var(--primary-cyan);
-}
+/* Presentation handled by Tailwind classes */
 </style>
